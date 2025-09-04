@@ -1283,7 +1283,7 @@
             state.proofCompleted = false;
         }
 
-        // Challenge AI function
+        // Challenge AI function - interactive dialogue
         async function challengeAI() {
             if (!state.currentStatement) {
                 alert('Please select a statement first');
@@ -1292,26 +1292,178 @@
             
             const feedback = document.getElementById('proof-feedback');
             feedback.className = 'feedback-display warning';
-            feedback.innerHTML = 'Challenging AI to generate a more accurate proof...';
+            
+            // Create interactive challenge interface
+            feedback.innerHTML = `
+                <strong>Challenge Mode:</strong> Let's work through this together!<br><br>
+                <p>Your statement: "<em>${state.currentStatement}</em>"</p>
+                <p>The generated proof might not match your exact claim. Can you explain your reasoning?</p>
+                
+                <textarea id="challenge-reasoning" style="width: 100%; padding: 0.8rem; margin: 1rem 0; 
+                    border: 2px solid var(--border-color); border-radius: 6px; min-height: 100px; 
+                    font-family: inherit; font-size: 0.95rem;" 
+                    placeholder="Explain why you believe your statement is true. For example: 'I checked several triples and noticed that exactly one number in each triple is divisible by 3, never two or three, and never zero...'"></textarea>
+                
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="action-btn primary" onclick="submitChallenge()">Get Custom Proof</button>
+                    <button class="action-btn ai" onclick="requestCounterexample()">Show Counterexample</button>
+                    <button class="action-btn secondary" onclick="requestSimplification()">Simplify Statement</button>
+                    <button class="action-btn" style="background: var(--text-muted); color: white;" onclick="cancelChallenge()">Cancel</button>
+                </div>
+            `;
+            
+            // Focus on the textarea
+            setTimeout(() => {
+                document.getElementById('challenge-reasoning')?.focus();
+            }, 100);
+        }
+        
+        // Submit challenge with learner's reasoning
+        async function submitChallenge() {
+            const reasoning = document.getElementById('challenge-reasoning')?.value.trim();
+            if (!reasoning) {
+                alert('Please explain your reasoning first');
+                return;
+            }
+            
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = 'Analyzing your reasoning...';
             
             try {
                 const response = await callAI(`
-                    The student claims: "${state.currentStatement}"
+                    Student's statement: "${state.currentStatement}"
+                    Student's reasoning: "${reasoning}"
                     
-                    The current proof seems to be about a different property.
-                    Generate a proof that EXACTLY matches their statement.
-                    If the statement is false, provide a counterexample.
-                    If the proof is too advanced, explain why briefly.
+                    Based on their reasoning:
+                    1. Is their statement mathematically correct?
+                    2. If correct, provide 8 proof steps that match their exact claim
+                    3. If incorrect, explain the issue gently and suggest a correction
                     
-                    Keep response under 5 sentences.
+                    Format: Start with "CORRECT" or "INCORRECT", then provide explanation.
+                `);
+                
+                if (response.includes('CORRECT')) {
+                    feedback.className = 'feedback-display success';
+                    feedback.innerHTML = `<strong>Great thinking!</strong> ${response.replace('CORRECT', '')}<br><br>
+                        <button class="action-btn primary" onclick="generateCustomProof('${reasoning}')">Generate Your Proof</button>`;
+                } else {
+                    feedback.className = 'feedback-display warning';
+                    feedback.innerHTML = `<strong>Let's refine this:</strong> ${response.replace('INCORRECT', '')}<br><br>
+                        <button class="action-btn primary" onclick="challengeAI()">Try Again</button>
+                        <button class="action-btn ai" onclick="generateProofSteps()">Use Standard Proof</button>`;
+                }
+            } catch (error) {
+                feedback.className = 'feedback-display error';
+                feedback.innerHTML = 'Unable to analyze reasoning. <button class="action-btn primary" onclick="challengeAI()">Try Again</button>';
+            }
+        }
+        
+        // Generate custom proof based on learner's reasoning
+        async function generateCustomProof(reasoning) {
+            const container = document.getElementById('proof-container');
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Generating custom proof based on your reasoning...</p>';
+            
+            try {
+                const response = await callAI(`
+                    Generate exactly 8 proof steps for: "${state.currentStatement}"
+                    Use this approach: "${reasoning}"
+                    
+                    Make the proof match their exact claim and reasoning.
+                    Each step should be one clear sentence.
+                    Format: Return only the 8 steps, one per line.
+                `);
+                
+                const steps = response.split('\n').filter(s => s.trim()).slice(0, 8);
+                if (steps.length >= 8) {
+                    state.currentProofSteps = steps;
+                    displayShuffledSteps(steps);
+                    
+                    const feedback = document.getElementById('proof-feedback');
+                    feedback.className = 'feedback-display success';
+                    feedback.innerHTML = 'Custom proof generated! Now arrange the steps in logical order.';
+                } else {
+                    generateFallbackSteps();
+                }
+            } catch (error) {
+                generateFallbackSteps();
+            }
+        }
+        
+        // Request counterexample
+        async function requestCounterexample() {
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = 'Checking for counterexamples...';
+            
+            try {
+                const response = await callAI(`
+                    For the statement: "${state.currentStatement}"
+                    
+                    If this is false, provide a specific counterexample triple.
+                    If this is true, confirm it's true and explain why there's no counterexample.
+                    Be encouraging and educational.
+                    
+                    Keep response under 3 sentences.
                 `);
                 
                 feedback.className = 'feedback-display info';
-                feedback.innerHTML = `<strong>AI Response:</strong><br>${response}<br><br>
-                    <button class="action-btn primary" onclick="generateProofSteps()">Regenerate Steps</button>`;
+                feedback.innerHTML = `<strong>Counterexample Check:</strong><br>${response}<br><br>
+                    <button class="action-btn primary" onclick="challengeAI()">Revise Statement</button>
+                    <button class="action-btn ai" onclick="generateProofSteps()">Continue Anyway</button>`;
             } catch (error) {
                 feedback.className = 'feedback-display error';
-                feedback.textContent = 'AI challenge temporarily unavailable.';
+                feedback.innerHTML = 'Unable to check for counterexamples. <button class="action-btn primary" onclick="challengeAI()">Try Again</button>';
+            }
+        }
+        
+        // Request simplification
+        async function requestSimplification() {
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = 'Finding a simpler version...';
+            
+            try {
+                const response = await callAI(`
+                    The student wrote: "${state.currentStatement}"
+                    
+                    Suggest a simpler, related statement that:
+                    1. Is definitely true
+                    2. Is easier to prove
+                    3. Still explores the same concept
+                    
+                    Format: State the simpler version and explain why it's easier.
+                    Keep under 3 sentences.
+                `);
+                
+                feedback.className = 'feedback-display info';
+                feedback.innerHTML = `<strong>Simpler Alternative:</strong><br>${response}<br><br>
+                    <textarea id="new-statement" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;
+                        border: 2px solid var(--border-color); border-radius: 6px;" 
+                        placeholder="Edit the statement here...">${state.currentStatement}</textarea><br>
+                    <button class="action-btn primary" onclick="updateStatement()">Use New Statement</button>
+                    <button class="action-btn secondary" onclick="generateProofSteps()">Keep Original</button>`;
+            } catch (error) {
+                feedback.className = 'feedback-display error';
+                feedback.innerHTML = 'Unable to simplify. <button class="action-btn primary" onclick="challengeAI()">Try Again</button>';
+            }
+        }
+        
+        // Update statement
+        function updateStatement() {
+            const newStatement = document.getElementById('new-statement')?.value.trim();
+            if (newStatement) {
+                state.currentStatement = newStatement;
+                document.getElementById('current-statement').textContent = newStatement;
+                generateProofSteps();
+            }
+        }
+        
+        // Cancel challenge
+        function cancelChallenge() {
+            document.getElementById('proof-feedback').style.display = 'none';
+            if (state.currentProofSteps.length > 0) {
+                document.getElementById('proof-actions').style.display = 'flex';
             }
         }
 
