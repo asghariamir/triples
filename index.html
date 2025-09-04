@@ -112,6 +112,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border-bottom: 4px solid transparent;
+            position: relative;
         }
 
         .tab-button.active {
@@ -122,6 +123,144 @@
 
         .tab-button:hover:not(.active) {
             background: var(--interactive-bg);
+        }
+
+        .tab-button.locked::after {
+            content: "🔒";
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        /* Password Modal */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .password-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-dialog {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 90%;
+            padding: 2.5rem 2rem;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .password-dialog h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        .password-dialog .access-info {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .password-dialog .password-input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .password-dialog label {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .password-dialog input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-dialog input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--interactive-bg);
+        }
+
+        .password-dialog .error-message {
+            color: var(--error-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-dialog .error-message.active {
+            display: block;
+        }
+
+        .password-dialog .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .password-dialog button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .password-dialog .submit-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .password-dialog .submit-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .password-dialog .cancel-btn {
+            background: var(--text-muted);
+            color: white;
+        }
+
+        .password-dialog .cancel-btn:hover {
+            background: #374151;
+            transform: translateY(-2px);
         }
 
         /* Tab Content */
@@ -645,7 +784,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Mathswell Navigation -->
         <div class="mathswell-nav">
             <a href="/" class="mw-link">
                 <img src="/logo-mathswell-square-mirror.svg" alt="Mathswell" width="28" height="28">
@@ -653,20 +791,39 @@
             </a>
         </div>
 
-        <!-- Header -->
         <div class="header">
             <h1>Pythagorean Triples Explorer</h1>
             <p class="subtitle">Discover patterns in primitive Pythagorean triples through observation, expression, and proof</p>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
             <button class="tab-button active" data-tab="see">See It</button>
-            <button class="tab-button" data-tab="say">Say It</button>
-            <button class="tab-button" data-tab="settle">Settle It</button>
+            <button class="tab-button locked" data-tab="say">Say It</button>
+            <button class="tab-button locked" data-tab="settle">Settle It</button>
         </div>
 
-        <!-- Tab 1: See It -->
+        <!-- Password Modal -->
+        <div class="password-modal" id="password-modal">
+            <div class="password-dialog">
+                <h3>Student Access Required</h3>
+                <p class="access-info">
+                    This section is exclusively available to Amir students enrolled in<br>
+                    <strong>Fundamentals of Mathematics</strong>
+                </p>
+                <div class="password-input-group">
+                    <label for="password-field">Enter Password:</label>
+                    <input type="password" id="password-field" placeholder="Enter your course password">
+                    <div class="error-message" id="password-error">
+                        Incorrect password. Please try again.
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="submit-btn" onclick="checkPassword()">Submit</button>
+                    <button class="cancel-btn" onclick="closePasswordModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <div id="see" class="tab-content active">
             <div class="concept-cards">
                 <div class="concept-card">
@@ -770,11 +927,10 @@
             </div>
 
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="switchTab('say')">Express Your Observations →</button>
+                <button class="nav-btn" onclick="attemptTabSwitch('say')">Express Your Observations →</button>
             </div>
         </div>
 
-        <!-- Tab 2: Say It -->
         <div id="say" class="tab-content">
             <div class="expression-workspace">
                 <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Express Your Mathematical Observations</h3>
@@ -808,11 +964,10 @@
             </div>
 
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="switchTab('settle')">Prove Your Statement →</button>
+                <button class="nav-btn" onclick="attemptTabSwitch('settle')">Prove Your Statement →</button>
             </div>
         </div>
 
-        <!-- Tab 3: Settle It -->
         <div id="settle" class="tab-content">
             <div class="proof-workspace">
                 <div class="statement-display" id="statement-to-prove">
@@ -844,7 +999,6 @@
                     <div class="feedback-display" id="proof-feedback"></div>
                 </div>
 
-                <!-- Complete Proof Display -->
                 <div class="complete-proof" id="complete-proof">
                     <h3>Complete Proof</h3>
                     <div class="theorem-box" id="theorem-statement"></div>
@@ -853,7 +1007,7 @@
                     
                     <div class="nav-buttons" style="margin-top: 2rem;">
                         <button class="nav-btn" onclick="tryAnotherStatement()">Try Another Statement</button>
-                        <button class="nav-btn" onclick="switchTab('say')">Create New Statement</button>
+                        <button class="nav-btn" onclick="attemptTabSwitch('say')">Create New Statement</button>
                     </div>
                 </div>
             </div>
@@ -890,21 +1044,99 @@
             selectedNon: null,
             selectedPrim: null,
             draggedElement: null,
-            proofCompleted: false
+            proofCompleted: false,
+            isUnlocked: false,
+            pendingTab: null
         };
 
         // Initialize
         function init() {
             setupTabs();
             setupDragAndDrop();
+            setupPasswordModal();
+            updateTabLocks();
         }
 
-        // Tab switching
+        // Update tab lock indicators
+        function updateTabLocks() {
+            document.querySelectorAll('.tab-button').forEach(button => {
+                const tabId = button.getAttribute('data-tab');
+                if ((tabId === 'say' || tabId === 'settle')) {
+                    if (state.isUnlocked) {
+                        button.classList.remove('locked');
+                    } else {
+                        button.classList.add('locked');
+                    }
+                }
+            });
+        }
+
+        // Password modal setup
+        function setupPasswordModal() {
+            // Handle Enter key in password field
+            document.getElementById('password-field').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkPassword();
+                }
+            });
+        }
+
+        // Show password modal
+        function showPasswordModal(tabId) {
+            state.pendingTab = tabId;
+            document.getElementById('password-modal').classList.add('active');
+            document.getElementById('password-field').value = '';
+            document.getElementById('password-error').classList.remove('active');
+            
+            // Focus password field after modal appears
+            setTimeout(() => {
+                document.getElementById('password-field').focus();
+            }, 100);
+        }
+
+        // Close password modal
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.remove('active');
+            document.getElementById('password-field').value = '';
+            document.getElementById('password-error').classList.remove('active');
+            state.pendingTab = null;
+        }
+
+        // Check password
+        function checkPassword() {
+            const password = document.getElementById('password-field').value;
+            
+            // ** PASSWORD CHECK **
+            if (password === "maths2025") {
+                state.isUnlocked = true;
+                closePasswordModal();
+                updateTabLocks();
+                
+                if (state.pendingTab) {
+                    switchTab(state.pendingTab);
+                }
+            } else {
+                document.getElementById('password-error').classList.add('active');
+                document.getElementById('password-field').value = '';
+                document.getElementById('password-field').focus();
+            }
+        }
+
+        // Attempt to switch tabs (with protection check)
+        function attemptTabSwitch(tabId) {
+            if ((tabId === 'say' || tabId === 'settle') && !state.isUnlocked) {
+                showPasswordModal(tabId);
+            } else {
+                switchTab(tabId);
+            }
+        }
+
+        // Tab switching setup
         function setupTabs() {
             document.querySelectorAll('.tab-button').forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', (e) => {
                     const tabId = button.getAttribute('data-tab');
-                    switchTab(tabId);
+                    attemptTabSwitch(tabId);
                 });
             });
         }
@@ -1103,7 +1335,7 @@
             // More flexible checking - accept various valid formulations
             const hasQuantifier = /\b(all|every|each|exists|some|exactly|at least|at most|there is|there are)\b/i.test(input);
             const mentionsTriples = /\b(primitive\s+)?pythagorean\s+triple/i.test(input) || 
-                                   (/\btriple/i.test(input) && /\bprimitive/i.test(input));
+                                    (/\btriple/i.test(input) && /\bprimitive/i.test(input));
             const hasProperty = /\b(divisible|multiple|odd|even|prime|square|consecutive|difference|sum|factor|one|two|three|\d+)/i.test(input);
             
             // Accept the statement if it has basic mathematical structure
@@ -1632,7 +1864,7 @@
             state.proofCompleted = false;
             
             // Go back to Say It tab
-            switchTab('say');
+            attemptTabSwitch('say');
         }
 
         function getHint() {
