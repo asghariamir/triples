@@ -607,44 +607,6 @@
                 </div>
             </div>
 
-            <div class="property-explorer">
-                <h3 style="color: var(--primary-color); text-align: center; margin-bottom: 1.5rem;">Explore Specific Properties</h3>
-                
-                <div class="property-selector">
-                    <button class="property-btn" onclick="showExamples('consecutive')">
-                        <strong>Consecutive Numbers</strong>
-                        <small>Two numbers differ by 1</small>
-                    </button>
-                    <button class="property-btn" onclick="showExamples('divisible3')">
-                        <strong>Divisible by 3</strong>
-                        <small>At least one number divisible by 3</small>
-                    </button>
-                    <button class="property-btn" onclick="showExamples('divisible5')">
-                        <strong>Divisible by 5</strong>
-                        <small>At least one number divisible by 5</small>
-                    </button>
-                    <button class="property-btn" onclick="showExamples('oddeven')">
-                        <strong>Odd-Even Pattern</strong>
-                        <small>Examine which numbers are odd/even</small>
-                    </button>
-                </div>
-
-                <div class="custom-query">
-                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Test Your Own Property</h4>
-                    <div class="custom-query-input">
-                        <input type="text" id="custom-property" placeholder="e.g., 'one leg is a perfect square' or 'hypotenuse is prime'">
-                        <button onclick="testCustomProperty()">Find Examples</button>
-                    </div>
-                </div>
-
-                <div class="examples-display" id="examples-display">
-                    <h4>Examples</h4>
-                    <div id="examples-list">
-                        <p style="color: var(--text-muted); text-align: center;">Select a property above to see examples</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="matching-exercise">
                 <h4>Match Non-Primitive to Primitive</h4>
                 <p>Every non-primitive triple is a multiple of a primitive triple. Can you find the matches?</p>
@@ -691,21 +653,45 @@
                 <div class="feedback-display" id="match-feedback"></div>
             </div>
 
-            <div class="observations-guide">
-                <h4>What to Look For</h4>
-                <div class="observation-prompt">
-                    <strong>Divisibility:</strong> Check if any number is always divisible by 3, 4, or 5
+            <div class="property-explorer">
+                <h3 style="color: var(--primary-color); text-align: center; margin-bottom: 1.5rem;">Explore Specific Properties</h3>
+                
+                <div class="property-selector">
+                    <button class="property-btn" onclick="showExamples('consecutive')">
+                        <strong>Consecutive Numbers</strong>
+                        <small>Two numbers differ by 1</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('divisible3')">
+                        <strong>Divisible by 3</strong>
+                        <small>At least one number divisible by 3</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('divisible5')">
+                        <strong>Divisible by 5</strong>
+                        <small>At least one number divisible by 5</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('oddeven')">
+                        <strong>Odd-Even Pattern</strong>
+                        <small>Examine which numbers are odd/even</small>
+                    </button>
                 </div>
-                <div class="observation-prompt">
-                    <strong>Parity (Odd/Even):</strong> Count how many odd and even numbers appear
+
+                <div class="custom-query">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Test Your Own Property</h4>
+                    <div class="custom-query-input">
+                        <input type="text" id="custom-property" placeholder="e.g., 'one leg is a perfect square' or 'hypotenuse is prime'">
+                        <button onclick="testCustomProperty()">Find Examples</button>
+                    </div>
                 </div>
-                <div class="observation-prompt">
-                    <strong>Differences:</strong> Look at c−b, c−a, and b−a patterns
-                </div>
-                <div class="observation-prompt">
-                    <strong>Special Forms:</strong> Are any numbers perfect squares, primes, or powers?
+
+                <div class="examples-display" id="examples-display">
+                    <h4>Examples</h4>
+                    <div id="examples-list">
+                        <p style="color: var(--text-muted); text-align: center;">Select a property above to see examples</p>
+                    </div>
                 </div>
             </div>
+
+          
 
             <div class="nav-buttons">
                 <button class="nav-btn" onclick="switchTab('say')">Express Your Observations →</button>
@@ -1219,6 +1205,9 @@
         function resetProof() {
             generateProofSteps();
             document.getElementById('proof-feedback').style.display = 'none';
+            document.getElementById('complete-proof').classList.remove('active');
+            document.getElementById('proof-container').style.display = 'block';
+            document.querySelector('#proof-area .action-buttons').style.display = 'flex';
         }
 
         async function checkWithAI() {
