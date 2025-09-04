@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pythagorean Triples Explorer | Mathswell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/logo-mathswell-square-mirror.ico" type="image/x-icon">
+    <link rel="icon" href="/logo-mathswell-square-mirror.svg" type="image/svg+xml">
+    
+    <style>
+        :root {
+            --primary-color: #0f766e;
+            --primary-light: #10b981;
+            --background: #f7faf9;
+            --accent-amber: #f59e0b;
+            --accent-red: #c62828;
+            --text-primary: #212121;
+            --text-muted: #4b5563;
+            --container-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --interactive-bg: #e6fffb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            min-height: 100vh;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        /* Mathswell Navigation */
+        .mathswell-nav {
+            display: flex;
+            justify-content: center;
+            margin: .4rem 0 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .mathswell-nav .mw-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary-color);
+            padding: .3rem .7rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,.9);
+            box-shadow: 0 1px 4px rgba(0,0,0,.08);
+        }
+        
+        .mathswell-nav .mw-link img {
+            display: block;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 2rem 2rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--container-bg);
+            border-bottom: 2px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: var(--interactive-bg);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Concept Cards */
+        .concept-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .concept-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .concept-card {
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .concept-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Property Explorer */
+        .property-explorer {
+            background: var(--container-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .property-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .property-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .property-btn {
+            padding: 1rem;
+            background: var(--background);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .property-btn:hover {
+            border-color: var(--primary-color);
+            background: var(--interactive-bg);
+        }
+
+        .property-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .property-btn strong {
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .property-btn small {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Custom Query */
+        .custom-query {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .custom-query-input {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .custom-query-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .custom-query-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .custom-query-input button {
+            padding: 0.8rem 1.5rem;
+            background: var(--accent-amber);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-query-input button:hover {
+            background: #dc8e0a;
+            transform: translateY(-2px);
+        }
+
+        /* Examples Display */
+        .examples-display {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            min-height: 150px;
+        }
+
+        .examples-display h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .triple-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .triple-item {
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Matching Exercise */
+        .matching-exercise {
+            background: var(--container-bg);
+            border: 2px solid var(--accent-amber);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .matching-exercise h4 {
+            color: var(--accent-amber);
+            margin-bottom: 1rem;
+        }
+
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .matching-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        .match-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .match-column h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .match-item {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .match-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .match-item.selected {
+            border-color: var(--accent-amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .match-item.correct {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .match-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+
+        /* Pattern Observations */
+        .observations-guide {
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .observations-guide h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .observation-prompt {
+            background: white;
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border-left: 3px solid var(--primary-light);
+        }
+
+        /* Expression Workspace */
+        .expression-workspace {
+            background: var(--container-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .expression-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        .expression-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.ai {
+            background: var(--accent-amber);
+            color: white;
+        }
+
+        .action-btn.ai:hover {
+            background: #dc8e0a;
+            transform: translateY(-2px);
+        }
+
+        /* Feedback Display */
+        .feedback-display {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-display.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .feedback-display.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .feedback-display.info {
+            display: block;
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Proof Workspace */
+        .proof-workspace {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .statement-display {
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .proof-steps-container {
+            background: var(--background);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            min-height: 300px;
+            margin: 2rem 0;
+        }
+
+        .proof-step {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-left: 5px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .proof-step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .proof-step.dragging {
+            opacity: 0.5;
+        }
+
+        .proof-step.correct {
+            border-left-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .hint-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--accent-amber);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+        }
+
+        .hint-box strong {
+            color: var(--accent-amber);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Mathswell Navigation -->
+        <div class="mathswell-nav">
+            <a href="/" class="mw-link">
+                <img src="/logo-mathswell-square-mirror.svg" alt="Mathswell" width="28" height="28">
+                <span>MATHSWELL</span>
+            </a>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>Pythagorean Triples Explorer</h1>
+            <p class="subtitle">Discover patterns in primitive Pythagorean triples through observation, expression, and proof</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" data-tab="see">See It</button>
+            <button class="tab-button" data-tab="say">Say It</button>
+            <button class="tab-button" data-tab="settle">Settle It</button>
+        </div>
+
+        <!-- Tab 1: See It -->
+        <div id="see" class="tab-content active">
+            <div class="concept-cards">
+                <div class="concept-card">
+                    <h4>Primitive Pythagorean Triples</h4>
+                    <p>Three positive integers (a, b, c) where:</p>
+                    <p>• a² + b² = c²</p>
+                    <p>• gcd(a, b, c) = 1 (no common factor)</p>
+                    <p><strong>Example:</strong> (3, 4, 5)</p>
+                </div>
+                <div class="concept-card">
+                    <h4>Generation Formula</h4>
+                    <p>All primitive triples have the form:</p>
+                    <p><strong>(m²−n², 2mn, m²+n²)</strong></p>
+                    <p>where m > n > 0, gcd(m,n) = 1,</p>
+                    <p>and exactly one of m, n is even</p>
+                </div>
+            </div>
+
+            <div class="property-explorer">
+                <h3 style="color: var(--primary-color); text-align: center; margin-bottom: 1.5rem;">Explore Specific Properties</h3>
+                
+                <div class="property-selector">
+                    <button class="property-btn" onclick="showExamples('consecutive')">
+                        <strong>Consecutive Numbers</strong>
+                        <small>Two numbers differ by 1</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('divisible3')">
+                        <strong>Divisible by 3</strong>
+                        <small>At least one number divisible by 3</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('divisible5')">
+                        <strong>Divisible by 5</strong>
+                        <small>At least one number divisible by 5</small>
+                    </button>
+                    <button class="property-btn" onclick="showExamples('oddeven')">
+                        <strong>Odd-Even Pattern</strong>
+                        <small>Examine which numbers are odd/even</small>
+                    </button>
+                </div>
+
+                <div class="custom-query">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Test Your Own Property</h4>
+                    <div class="custom-query-input">
+                        <input type="text" id="custom-property" placeholder="e.g., 'one leg is a perfect square' or 'hypotenuse is prime'">
+                        <button onclick="testCustomProperty()">Find Examples</button>
+                    </div>
+                </div>
+
+                <div class="examples-display" id="examples-display">
+                    <h4>Examples</h4>
+                    <div id="examples-list">
+                        <p style="color: var(--text-muted); text-align: center;">Select a property above to see examples</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="matching-exercise">
+                <h4>Match Non-Primitive to Primitive</h4>
+                <p>Every non-primitive triple is a multiple of a primitive triple. Can you find the matches?</p>
+                
+                <div class="matching-grid">
+                    <div class="match-column">
+                        <h5>Non-Primitive</h5>
+                        <div class="match-item" data-primitive="3,4,5" onclick="selectMatch(this, 'non')">
+                            (6, 8, 10)
+                        </div>
+                        <div class="match-item" data-primitive="5,12,13" onclick="selectMatch(this, 'non')">
+                            (15, 36, 39)
+                        </div>
+                        <div class="match-item" data-primitive="8,15,17" onclick="selectMatch(this, 'non')">
+                            (16, 30, 34)
+                        </div>
+                        <div class="match-item" data-primitive="7,24,25" onclick="selectMatch(this, 'non')">
+                            (21, 72, 75)
+                        </div>
+                    </div>
+                    <div class="match-arrow">→</div>
+                    <div class="match-column">
+                        <h5>Primitive</h5>
+                        <div class="match-item" data-value="5,12,13" onclick="selectMatch(this, 'prim')">
+                            (5, 12, 13)
+                        </div>
+                        <div class="match-item" data-value="3,4,5" onclick="selectMatch(this, 'prim')">
+                            (3, 4, 5)
+                        </div>
+                        <div class="match-item" data-value="7,24,25" onclick="selectMatch(this, 'prim')">
+                            (7, 24, 25)
+                        </div>
+                        <div class="match-item" data-value="8,15,17" onclick="selectMatch(this, 'prim')">
+                            (8, 15, 17)
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="action-btn primary" onclick="checkMatches()">Check Matches</button>
+                    <button class="action-btn" style="background: var(--text-muted); color: white; margin-left: 1rem;" onclick="resetMatches()">Reset</button>
+                </div>
+                
+                <div class="feedback-display" id="match-feedback"></div>
+            </div>
+
+            <div class="observations-guide">
+                <h4>What to Look For</h4>
+                <div class="observation-prompt">
+                    <strong>Divisibility:</strong> Check if any number is always divisible by 3, 4, or 5
+                </div>
+                <div class="observation-prompt">
+                    <strong>Parity (Odd/Even):</strong> Count how many odd and even numbers appear
+                </div>
+                <div class="observation-prompt">
+                    <strong>Differences:</strong> Look at c−b, c−a, and b−a patterns
+                </div>
+                <div class="observation-prompt">
+                    <strong>Special Forms:</strong> Are any numbers perfect squares, primes, or powers?
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="switchTab('say')">Express Your Observations →</button>
+            </div>
+        </div>
+
+        <!-- Tab 2: Say It -->
+        <div id="say" class="tab-content">
+            <div class="expression-workspace">
+                <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Express Your Mathematical Observations</h3>
+                
+                <p style="margin-bottom: 1rem;">Based on your exploration, write a mathematical statement about primitive Pythagorean triples:</p>
+                
+                <textarea class="expression-input" id="observation-input" rows="4" 
+                    placeholder="Example: 'In every primitive Pythagorean triple, exactly one of the three numbers is divisible by 5.'"></textarea>
+                
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="checkStatement()">Check Statement</button>
+                    <button class="action-btn ai" onclick="getAIGuidance()">Get AI Guidance</button>
+                </div>
+                
+                <div class="feedback-display" id="expression-feedback"></div>
+
+                <div id="saved-statements" style="margin-top: 2rem; display: none;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Your Verified Statements</h4>
+                    <div id="statements-list"></div>
+                </div>
+            </div>
+
+            <div class="hint-box">
+                <strong>Tips for Mathematical Statements:</strong>
+                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                    <li>Use precise quantifiers: "for all," "for every," "there exists," "exactly one"</li>
+                    <li>Be specific: "primitive Pythagorean triple" not just "Pythagorean triple"</li>
+                    <li>State clear properties: divisibility, parity, magnitude relationships</li>
+                    <li>Avoid vague terms: instead of "many," use "all" or give specific conditions</li>
+                </ul>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="switchTab('settle')">Prove Your Statement →</button>
+            </div>
+        </div>
+
+        <!-- Tab 3: Settle It -->
+        <div id="settle" class="tab-content">
+            <div class="proof-workspace">
+                <div class="statement-display" id="statement-to-prove">
+                    <strong>Statement to Prove:</strong><br>
+                    <span id="current-statement">Select a statement from the "Say It" tab first</span>
+                </div>
+
+                <div class="action-buttons" style="margin: 2rem 0;">
+                    <button class="action-btn primary" onclick="generateProofSteps()">Generate Proof Steps</button>
+                    <button class="action-btn ai" onclick="checkWithAI()">Check with AI</button>
+                </div>
+
+                <div id="proof-area">
+                    <h4 style="color: var(--primary-color); margin: 1.5rem 0;">Arrange the Proof Steps</h4>
+                    
+                    <div class="proof-steps-container" id="proof-container">
+                        <p style="text-align: center; color: var(--text-muted);">
+                            Click "Generate Proof Steps" to begin
+                        </p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="checkProof()">Check Order</button>
+                        <button class="action-btn" style="background: var(--accent-amber); color: white;" onclick="getHint()">Get Hint</button>
+                        <button class="action-btn" style="background: var(--accent-red); color: white;" onclick="resetProof()">Reset</button>
+                    </div>
+
+                    <div class="feedback-display" id="proof-feedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let state = {
+            primitiveTriples: [
+                {a: 3, b: 4, c: 5},
+                {a: 5, b: 12, c: 13},
+                {a: 8, b: 15, c: 17},
+                {a: 7, b: 24, c: 25},
+                {a: 20, b: 21, c: 29},
+                {a: 9, b: 40, c: 41},
+                {a: 12, b: 35, c: 37},
+                {a: 11, b: 60, c: 61},
+                {a: 13, b: 84, c: 85},
+                {a: 16, b: 63, c: 65},
+                {a: 28, b: 45, c: 53},
+                {a: 33, b: 56, c: 65},
+                {a: 36, b: 77, c: 85},
+                {a: 39, b: 80, c: 89},
+                {a: 65, b: 72, c: 97}
+            ],
+            verifiedStatements: [],
+            currentStatement: null,
+            selectedNon: null,
+            selectedPrim: null,
+            draggedElement: null
+        };
+
+        // Initialize
+        function init() {
+            setupTabs();
+            setupDragAndDrop();
+        }
+
+        // Tab switching
+        function setupTabs() {
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'settle' && state.currentStatement) {
+                document.getElementById('current-statement').textContent = state.currentStatement;
+            }
+        }
+
+        // Show examples based on property
+        function showExamples(property) {
+            // Update button states
+            document.querySelectorAll('.property-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.property-btn').classList.add('active');
+            
+            let examples = [];
+            let description = '';
+            
+            switch(property) {
+                case 'consecutive':
+                    examples = state.primitiveTriples.filter(t => 
+                        (t.c - t.b === 1) || (t.b - t.a === 1) || (t.c - t.a === 1)
+                    );
+                    description = 'Triples where two numbers are consecutive:';
+                    break;
+                    
+                case 'divisible3':
+                    examples = state.primitiveTriples.filter(t => 
+                        t.a % 3 === 0 || t.b % 3 === 0 || t.c % 3 === 0
+                    );
+                    description = 'Triples with at least one number divisible by 3:';
+                    break;
+                    
+                case 'divisible5':
+                    examples = state.primitiveTriples.filter(t => 
+                        t.a % 5 === 0 || t.b % 5 === 0 || t.c % 5 === 0
+                    );
+                    description = 'Triples with at least one number divisible by 5:';
+                    break;
+                    
+                case 'oddeven':
+                    examples = state.primitiveTriples.slice(0, 8);
+                    description = 'Odd/Even patterns (check which numbers are odd or even):';
+                    break;
+            }
+            
+            displayExamples(examples, description);
+        }
+
+        function displayExamples(triples, description) {
+            const display = document.getElementById('examples-list');
+            
+            if (triples.length === 0) {
+                display.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No examples found with this property</p>';
+                return;
+            }
+            
+            let html = `<p>${description}</p><div class="triple-list">`;
+            triples.forEach(t => {
+                const oddCount = [t.a, t.b, t.c].filter(n => n % 2 === 1).length;
+                html += `<div class="triple-item" title="${oddCount} odd numbers">(${t.a}, ${t.b}, ${t.c})</div>`;
+            });
+            html += '</div>';
+            
+            display.innerHTML = html;
+        }
+
+        // Custom property testing with AI
+        async function testCustomProperty() {
+            const input = document.getElementById('custom-property').value.trim();
+            if (!input) {
+                alert('Please enter a property to test');
+                return;
+            }
+            
+            const display = document.getElementById('examples-list');
+            display.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Searching for examples...</p>';
+            
+            try {
+                const response = await callAI(`
+                    Given these primitive Pythagorean triples:
+                    ${state.primitiveTriples.slice(0, 10).map(t => `(${t.a}, ${t.b}, ${t.c})`).join(', ')}
+                    
+                    Find which ones satisfy: "${input}"
+                    
+                    Return only the triples that match, or "none" if none match.
+                    Format: List the matching triples as (a,b,c) separated by commas.
+                `);
+                
+                if (response.toLowerCase().includes('none')) {
+                    display.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No triples found with this property</p>';
+                } else {
+                    display.innerHTML = `<p>Triples matching "${input}":</p><div class="triple-list">${response}</div>`;
+                }
+            } catch (error) {
+                display.innerHTML = '<p style="color: var(--error-color); text-align: center;">Could not analyze this property. Try a simpler description.</p>';
+            }
+        }
+
+        // Matching exercise
+        function selectMatch(element, type) {
+            if (type === 'non') {
+                if (state.selectedNon) {
+                    state.selectedNon.classList.remove('selected');
+                }
+                state.selectedNon = element;
+                element.classList.add('selected');
+            } else {
+                if (state.selectedPrim) {
+                    state.selectedPrim.classList.remove('selected');
+                }
+                state.selectedPrim = element;
+                element.classList.add('selected');
+            }
+            
+            // Auto-check if both selected
+            if (state.selectedNon && state.selectedPrim) {
+                setTimeout(checkSingleMatch, 500);
+            }
+        }
+
+        function checkSingleMatch() {
+            if (!state.selectedNon || !state.selectedPrim) return;
+            
+            const correctPrim = state.selectedNon.dataset.primitive;
+            const selectedPrim = state.selectedPrim.dataset.value;
+            
+            if (correctPrim === selectedPrim) {
+                state.selectedNon.classList.add('correct');
+                state.selectedPrim.classList.add('correct');
+                state.selectedNon.classList.remove('selected');
+                state.selectedPrim.classList.remove('selected');
+                state.selectedNon = null;
+                state.selectedPrim = null;
+                
+                // Check if all matched
+                const allItems = document.querySelectorAll('.match-item');
+                const correctItems = document.querySelectorAll('.match-item.correct');
+                if (correctItems.length === allItems.length) {
+                    const feedback = document.getElementById('match-feedback');
+                    feedback.className = 'feedback-display success';
+                    feedback.innerHTML = '<strong>Perfect!</strong> All matches are correct!';
+                }
+            } else {
+                // Wrong match - reset selection
+                setTimeout(() => {
+                    state.selectedNon.classList.remove('selected');
+                    state.selectedPrim.classList.remove('selected');
+                    state.selectedNon = null;
+                    state.selectedPrim = null;
+                }, 1000);
+            }
+        }
+
+        function checkMatches() {
+            const feedback = document.getElementById('match-feedback');
+            const correctItems = document.querySelectorAll('.match-item.correct');
+            const totalPairs = 4;
+            
+            if (correctItems.length === totalPairs * 2) {
+                feedback.className = 'feedback-display success';
+                feedback.innerHTML = '<strong>Excellent!</strong> All matches are correct! Every non-primitive triple is indeed a multiple of its primitive form.';
+            } else {
+                feedback.className = 'feedback-display info';
+                feedback.innerHTML = `<strong>Keep going!</strong> You have ${correctItems.length / 2} out of ${totalPairs} correct matches.`;
+            }
+        }
+
+        function resetMatches() {
+            document.querySelectorAll('.match-item').forEach(item => {
+                item.classList.remove('selected', 'correct');
+            });
+            state.selectedNon = null;
+            state.selectedPrim = null;
+            document.getElementById('match-feedback').style.display = 'none';
+        }
+
+        // Statement checking (Tab 2)
+        function checkStatement() {
+            const input = document.getElementById('observation-input').value.trim();
+            const feedback = document.getElementById('expression-feedback');
+            
+            if (!input) {
+                feedback.className = 'feedback-display error';
+                feedback.textContent = 'Please write a mathematical statement first.';
+                return;
+            }
+
+            // Check for mathematical precision
+            const hasQuantifier = /\b(all|every|each|exists|some|exactly|at least|at most)\b/i.test(input);
+            const hasPrimitive = /\bprimitive\b/i.test(input);
+            const hasProperty = /\b(divisible|odd|even|prime|square|consecutive|difference|sum)\b/i.test(input);
+            
+            if (hasQuantifier && hasPrimitive && hasProperty) {
+                feedback.className = 'feedback-display success';
+                feedback.innerHTML = '<strong>Well-formed statement!</strong><br>Your statement is mathematically precise. Ready to prove it?';
+                
+                state.currentStatement = input;
+                state.verifiedStatements.push(input);
+                
+                document.getElementById('saved-statements').style.display = 'block';
+                const list = document.getElementById('statements-list');
+                list.innerHTML = state.verifiedStatements.map((s, i) => 
+                    `<div style="background: white; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid var(--primary-color);">
+                        ${i+1}. ${s}
+                    </div>`
+                ).join('');
+            } else {
+                feedback.className = 'feedback-display info';
+                let missing = [];
+                if (!hasQuantifier) missing.push('a quantifier (all, every, exists, exactly one)');
+                if (!hasPrimitive) missing.push('specification of "primitive" triples');
+                if (!hasProperty) missing.push('a clear mathematical property');
+                
+                feedback.innerHTML = `<strong>Needs improvement:</strong><br>Missing: ${missing.join(', ')}`;
+            }
+        }
+
+        // AI Guidance
+        async function getAIGuidance() {
+            const input = document.getElementById('observation-input').value.trim();
+            const feedback = document.getElementById('expression-feedback');
+            
+            if (!input) {
+                feedback.className = 'feedback-display error';
+                feedback.textContent = 'Please write your observation first.';
+                return;
+            }
+            
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = 'AI is analyzing your statement...';
+            
+            try {
+                const response = await callAI(`
+                    The student observed primitive Pythagorean triples and wrote: "${input}"
+                    
+                    Help them express this as a precise mathematical statement.
+                    - Use proper quantifiers (for all, there exists, exactly one)
+                    - Specify "primitive Pythagorean triple"
+                    - Use clear mathematical terms
+                    
+                    If it's already good, confirm it. If not, suggest improvements.
+                    Keep response under 3 sentences.
+                `);
+                
+                feedback.className = 'feedback-display info';
+                feedback.innerHTML = `<strong>AI Guidance:</strong><br>${response}`;
+            } catch (error) {
+                feedback.className = 'feedback-display error';
+                feedback.textContent = 'AI guidance temporarily unavailable.';
+            }
+        }
+
+        // Proof generation
+        function generateProofSteps() {
+            if (!state.currentStatement) {
+                alert('Please select a statement from the "Say It" tab first');
+                return;
+            }
+            
+            let steps = [];
+            
+            // Generate appropriate steps based on common properties
+            if (state.currentStatement.toLowerCase().includes('divisible') && state.currentStatement.toLowerCase().includes('3')) {
+                steps = [
+                    "Consider a primitive Pythagorean triple (a, b, c) where a² + b² = c².",
+                    "Using the formula, every primitive triple has form (m²−n², 2mn, m²+n²).",
+                    "We examine divisibility by 3 for each component.",
+                    "For a = m²−n²: If m ≡ n (mod 3), then m²−n² ≡ 0 (mod 3).",
+                    "For b = 2mn: If m ≡ 0 (mod 3) or n ≡ 0 (mod 3), then 2mn ≡ 0 (mod 3).",
+                    "For c = m²+n²: If m ≡ 0 and n ≡ 0 (mod 3), then m²+n² ≡ 0 (mod 3), but this contradicts gcd(m,n)=1.",
+                    "Since m and n are coprime, they cannot both be divisible by 3.",
+                    "Therefore, at least one of a, b, or c is divisible by 3."
+                ];
+            } else if (state.currentStatement.toLowerCase().includes('odd') && state.currentStatement.toLowerCase().includes('even')) {
+                steps = [
+                    "Let (a, b, c) be a primitive Pythagorean triple.",
+                    "From the formula: a = m²−n², b = 2mn, c = m²+n².",
+                    "Notice that b = 2mn is always even (divisible by 2).",
+                    "For c = m²+n²: Since exactly one of m, n is even, m² and n² have opposite parity.",
+                    "Therefore c = m²+n² is odd (odd + even = odd).",
+                    "For a = m²−n²: Similarly, since m² and n² have opposite parity, a is odd.",
+                    "We conclude: a is odd, b is even, c is odd.",
+                    "Therefore, exactly one of the three numbers (b) is even."
+                ];
+            } else {
+                steps = [
+                    "State the property to be proven.",
+                    "Use the formula representation (m²−n², 2mn, m²+n²).",
+                    "Apply the constraints: m > n > 0, gcd(m,n) = 1, exactly one even.",
+                    "Analyze each component of the triple.",
+                    "Apply relevant number theory properties.",
+                    "Show the required property holds.",
+                    "State the conclusion."
+                ];
+            }
+            
+            // Shuffle steps
+            const shuffled = [...steps].sort(() => Math.random() - 0.5);
+            
+            const container = document.getElementById('proof-container');
+            container.innerHTML = '';
+            
+            shuffled.forEach((step, index) => {
+                const div = document.createElement('div');
+                div.className = 'proof-step';
+                div.draggable = true;
+                div.textContent = step;
+                div.dataset.originalIndex = steps.indexOf(step);
+                container.appendChild(div);
+            });
+        }
+
+        function setupDragAndDrop() {
+            const container = document.getElementById('proof-container');
+            
+            container.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('proof-step')) {
+                    state.draggedElement = e.target;
+                    e.target.classList.add('dragging');
+                }
+            });
+            
+            container.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('proof-step')) {
+                    e.target.classList.remove('dragging');
+                }
+            });
+            
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(state.draggedElement);
+                } else {
+                    container.insertBefore(state.draggedElement, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.proof-step:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function checkProof() {
+            const steps = document.querySelectorAll('.proof-step');
+            let correct = true;
+            
+            steps.forEach((step, index) => {
+                const originalIndex = parseInt(step.dataset.originalIndex);
+                if (originalIndex !== index) {
+                    correct = false;
+                    step.classList.remove('correct');
+                } else {
+                    step.classList.add('correct');
+                }
+            });
+            
+            const feedback = document.getElementById('proof-feedback');
+            if (correct) {
+                feedback.className = 'feedback-display success';
+                feedback.innerHTML = '<strong>Perfect!</strong> Your proof is correctly ordered and logically sound!';
+            } else {
+                feedback.className = 'feedback-display info';
+                const correctCount = document.querySelectorAll('.proof-step.correct').length;
+                feedback.innerHTML = `<strong>Getting there!</strong> ${correctCount} out of ${steps.length} steps are in the right position. Green highlights show correct placement.`;
+            }
+        }
+
+        function getHint() {
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = '<strong>Hint:</strong> Start with the general setup (what we\'re proving), then apply the formula, analyze the components, and conclude with the result.';
+        }
+
+        function resetProof() {
+            generateProofSteps();
+            document.getElementById('proof-feedback').style.display = 'none';
+        }
+
+        async function checkWithAI() {
+            if (!state.currentStatement) {
+                alert('Please select a statement first');
+                return;
+            }
+            
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display info';
+            feedback.innerHTML = 'AI is checking your statement...';
+            
+            try {
+                const response = await callAI(`
+                    Is this statement about primitive Pythagorean triples true or false?
+                    Statement: "${state.currentStatement}"
+                    
+                    If true, give a brief reason why. If false, provide a counterexample.
+                    Keep response under 3 sentences.
+                `);
+                
+                feedback.className = 'feedback-display info';
+                feedback.innerHTML = `<strong>AI Analysis:</strong><br>${response}`;
+            } catch (error) {
+                feedback.className = 'feedback-display error';
+                feedback.textContent = 'AI check temporarily unavailable.';
+            }
+        }
+
+        // Simple AI integration
+        async function callAI(prompt) {
+            try {
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        contents: [{ role: "user", parts: [{ text: prompt }] }] 
+                    })
+                });
+                
+                if (!response.ok) throw new Error('AI unavailable');
+                
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate response';
+            } catch (error) {
+                console.error('AI error:', error);
+                throw error;
+            }
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
