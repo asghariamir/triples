@@ -1089,7 +1089,7 @@
             document.getElementById('match-feedback').style.display = 'none';
         }
 
-        // Statement checking (Tab 2)
+        // Statement checking (Tab 2) - More flexible and accepting
         function checkStatement() {
             const input = document.getElementById('observation-input').value.trim();
             const feedback = document.getElementById('expression-feedback');
@@ -1100,17 +1100,21 @@
                 return;
             }
 
-            // Check for mathematical precision
-            const hasQuantifier = /\b(all|every|each|exists|some|exactly|at least|at most)\b/i.test(input);
-            const hasPrimitive = /\bprimitive\b/i.test(input);
-            const hasProperty = /\b(divisible|odd|even|prime|square|consecutive|difference|sum)\b/i.test(input);
+            // More flexible checking - accept various valid formulations
+            const hasQuantifier = /\b(all|every|each|exists|some|exactly|at least|at most|there is|there are)\b/i.test(input);
+            const mentionsTriples = /\b(primitive\s+)?pythagorean\s+triple/i.test(input) || 
+                                   (/\btriple/i.test(input) && /\bprimitive/i.test(input));
+            const hasProperty = /\b(divisible|multiple|odd|even|prime|square|consecutive|difference|sum|factor|one|two|three|\d+)/i.test(input);
             
-            if (hasQuantifier && hasPrimitive && hasProperty) {
+            // Accept the statement if it has basic mathematical structure
+            if ((hasQuantifier || mentionsTriples) && hasProperty) {
                 feedback.className = 'feedback-display success';
-                feedback.innerHTML = '<strong>Well-formed statement!</strong><br>Your statement is mathematically precise. Ready to prove it?';
+                feedback.innerHTML = '<strong>Great statement!</strong><br>Your mathematical observation is clear. Let\'s explore it further!';
                 
                 state.currentStatement = input;
-                state.verifiedStatements.push(input);
+                if (!state.verifiedStatements.includes(input)) {
+                    state.verifiedStatements.push(input);
+                }
                 
                 document.getElementById('saved-statements').style.display = 'block';
                 const list = document.getElementById('statements-list');
@@ -1119,18 +1123,32 @@
                         ${i+1}. ${s}
                     </div>`
                 ).join('');
-            } else {
-                feedback.className = 'feedback-display info';
-                let missing = [];
-                if (!hasQuantifier) missing.push('a quantifier (all, every, exists, exactly one)');
-                if (!hasPrimitive) missing.push('specification of "primitive" triples');
-                if (!hasProperty) missing.push('a clear mathematical property');
                 
-                feedback.innerHTML = `<strong>Needs improvement:</strong><br>Missing: ${missing.join(', ')}`;
+                // Add navigation hint
+                setTimeout(() => {
+                    feedback.innerHTML += '<br><br>Ready to prove it? Click "Prove Your Statement →" below!';
+                }, 500);
+            } else {
+                // Provide helpful, conversational feedback
+                feedback.className = 'feedback-display info';
+                let suggestions = [];
+                
+                if (!hasQuantifier && !mentionsTriples) {
+                    suggestions.push('Try starting with "In every primitive Pythagorean triple..." or "All primitive triples..."');
+                }
+                if (!hasProperty) {
+                    suggestions.push('Include a specific property you observed (like divisibility, being odd/even, etc.)');
+                }
+                
+                if (suggestions.length > 0) {
+                    feedback.innerHTML = `<strong>Almost there!</strong><br>${suggestions.join('<br>')}`;
+                } else {
+                    feedback.innerHTML = '<strong>Keep going!</strong><br>Try to be more specific about what pattern you observed.';
+                }
             }
         }
 
-        // AI Guidance
+        // AI Guidance - More conversational
         async function getAIGuidance() {
             const input = document.getElementById('observation-input').value.trim();
             const feedback = document.getElementById('expression-feedback');
@@ -1142,26 +1160,59 @@
             }
             
             feedback.className = 'feedback-display info';
-            feedback.innerHTML = 'AI is analyzing your statement...';
+            feedback.innerHTML = 'Thinking about your statement...';
             
             try {
                 const response = await callAI(`
-                    The student observed primitive Pythagorean triples and wrote: "${input}"
+                    Someone is exploring primitive Pythagorean triples and wrote: "${input}"
                     
-                    Help them express this as a precise mathematical statement.
-                    - Use proper quantifiers (for all, there exists, exactly one)
-                    - Specify "primitive Pythagorean triple"
-                    - Use clear mathematical terms
+                    Have a brief conversation with them about their statement.
+                    - If it's mathematically correct and clear, confirm it enthusiastically
+                    - If it needs minor tweaks, suggest them conversationally
+                    - Don't use formal notation unless absolutely necessary
+                    - Don't refer to them as "the student" - talk directly to them
+                    - Focus on whether the idea is correct, not perfect wording
                     
-                    If it's already good, confirm it. If not, suggest improvements.
-                    Keep response under 3 sentences.
+                    Keep response under 3 sentences and be encouraging.
                 `);
                 
                 feedback.className = 'feedback-display info';
                 feedback.innerHTML = `<strong>AI Guidance:</strong><br>${response}`;
+                
+                // If the statement seems good enough, auto-accept it
+                if (response.toLowerCase().includes('correct') || 
+                    response.toLowerCase().includes('right') || 
+                    response.toLowerCase().includes('good')) {
+                    setTimeout(() => {
+                        feedback.innerHTML += '<br><br><button class="action-btn primary" onclick="acceptStatementFromAI()">Use This Statement</button>';
+                    }, 500);
+                }
             } catch (error) {
                 feedback.className = 'feedback-display error';
-                feedback.textContent = 'AI guidance temporarily unavailable.';
+                feedback.textContent = 'AI guidance temporarily unavailable. Your statement looks fine though - try clicking "Check Statement"!';
+            }
+        }
+        
+        // New function to accept statement after AI approval
+        function acceptStatementFromAI() {
+            const input = document.getElementById('observation-input').value.trim();
+            if (input) {
+                state.currentStatement = input;
+                if (!state.verifiedStatements.includes(input)) {
+                    state.verifiedStatements.push(input);
+                }
+                
+                const feedback = document.getElementById('expression-feedback');
+                feedback.className = 'feedback-display success';
+                feedback.innerHTML = '<strong>Statement accepted!</strong><br>Ready to explore the proof? Click "Prove Your Statement →" below!';
+                
+                document.getElementById('saved-statements').style.display = 'block';
+                const list = document.getElementById('statements-list');
+                list.innerHTML = state.verifiedStatements.map((s, i) => 
+                    `<div style="background: white; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem; border-left: 3px solid var(--primary-color);">
+                        ${i+1}. ${s}
+                    </div>`
+                ).join('');
             }
         }
 
