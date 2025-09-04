@@ -368,28 +368,6 @@
             color: var(--text-muted);
         }
 
-        /* Pattern Observations */
-        .observations-guide {
-            background: var(--interactive-bg);
-            border: 2px solid var(--primary-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .observations-guide h4 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .observation-prompt {
-            background: white;
-            border-radius: 6px;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-            border-left: 3px solid var(--primary-light);
-        }
-
         /* Expression Workspace */
         .expression-workspace {
             background: var(--container-bg);
@@ -450,6 +428,16 @@
             transform: translateY(-2px);
         }
 
+        .action-btn.secondary {
+            background: var(--text-muted);
+            color: white;
+        }
+
+        .action-btn.secondary:hover {
+            background: #374151;
+            transform: translateY(-2px);
+        }
+
         /* Feedback Display */
         .feedback-display {
             margin-top: 1.5rem;
@@ -479,6 +467,13 @@
             color: var(--primary-color);
         }
 
+        .feedback-display.warning {
+            display: block;
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid var(--accent-amber);
+            color: var(--accent-amber);
+        }
+
         /* Proof Workspace */
         .proof-workspace {
             max-width: 800px;
@@ -502,6 +497,12 @@
             padding: 1.5rem;
             min-height: 300px;
             margin: 2rem 0;
+            transition: all 0.5s ease;
+        }
+
+        .proof-steps-container.complete {
+            border: 2px solid var(--success-color);
+            background: white;
         }
 
         .proof-step {
@@ -527,6 +528,55 @@
         .proof-step.correct {
             border-left-color: var(--success-color);
             background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* Complete Proof Display */
+        .complete-proof {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            padding: 2rem;
+            background: white;
+            border: 2px solid var(--success-color);
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .complete-proof.active {
+            display: block;
+        }
+
+        .complete-proof h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .theorem-box {
+            background: var(--interactive-bg);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .proof-text {
+            line-height: 1.8;
+            color: var(--text-primary);
+            text-align: justify;
+        }
+
+        .proof-text p {
+            margin-bottom: 1rem;
+            text-indent: 1.5rem;
+        }
+
+        .qed-symbol {
+            text-align: right;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: var(--primary-color);
         }
 
         .nav-buttons {
@@ -562,6 +612,34 @@
 
         .hint-box strong {
             color: var(--accent-amber);
+        }
+
+        /* Animation for proof transformation */
+        @keyframes proofTransform {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .transforming {
+            animation: proofTransform 0.5s ease;
+        }
+
+        /* AI disclaimer */
+        .ai-disclaimer {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-amber);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
         }
     </style>
 </head>
@@ -647,7 +725,7 @@
                 
                 <div style="text-align: center;">
                     <button class="action-btn primary" onclick="checkMatches()">Check Matches</button>
-                    <button class="action-btn" style="background: var(--text-muted); color: white; margin-left: 1rem;" onclick="resetMatches()">Reset</button>
+                    <button class="action-btn secondary" onclick="resetMatches()">Reset</button>
                 </div>
                 
                 <div class="feedback-display" id="match-feedback"></div>
@@ -690,8 +768,6 @@
                     </div>
                 </div>
             </div>
-
-          
 
             <div class="nav-buttons">
                 <button class="nav-btn" onclick="switchTab('say')">Express Your Observations →</button>
@@ -746,7 +822,8 @@
 
                 <div class="action-buttons" style="margin: 2rem 0;">
                     <button class="action-btn primary" onclick="generateProofSteps()">Generate Proof Steps</button>
-                    <button class="action-btn ai" onclick="checkWithAI()">Check with AI</button>
+                    <button class="action-btn ai" onclick="challengeAI()">Challenge AI</button>
+                    <button class="action-btn secondary" onclick="checkWithAI()">Verify Statement</button>
                 </div>
 
                 <div id="proof-area">
@@ -758,14 +835,31 @@
                         </p>
                     </div>
 
-                    <div class="action-buttons">
+                    <div class="action-buttons" id="proof-actions" style="display: none;">
                         <button class="action-btn primary" onclick="checkProof()">Check Order</button>
                         <button class="action-btn" style="background: var(--accent-amber); color: white;" onclick="getHint()">Get Hint</button>
-                        <button class="action-btn" style="background: var(--accent-red); color: white;" onclick="resetProof()">Reset</button>
+                        <button class="action-btn secondary" onclick="resetProof()">Reset</button>
                     </div>
 
                     <div class="feedback-display" id="proof-feedback"></div>
                 </div>
+
+                <!-- Complete Proof Display -->
+                <div class="complete-proof" id="complete-proof">
+                    <h3>Complete Proof</h3>
+                    <div class="theorem-box" id="theorem-statement"></div>
+                    <div class="proof-text" id="proof-text"></div>
+                    <div class="qed-symbol">∎</div>
+                    
+                    <div class="nav-buttons" style="margin-top: 2rem;">
+                        <button class="nav-btn" onclick="tryAnotherStatement()">Try Another Statement</button>
+                        <button class="nav-btn" onclick="switchTab('say')">Create New Statement</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-disclaimer">
+                The AI helper can make mistakes and may be temporarily unavailable during periods of high traffic
             </div>
         </div>
     </div>
@@ -792,9 +886,11 @@
             ],
             verifiedStatements: [],
             currentStatement: null,
+            currentProofSteps: [],
             selectedNon: null,
             selectedPrim: null,
-            draggedElement: null
+            draggedElement: null,
+            proofCompleted: false
         };
 
         // Initialize
@@ -1069,53 +1165,109 @@
             }
         }
 
-        // Proof generation
-        function generateProofSteps() {
+        // Enhanced proof generation with statement matching
+        async function generateProofSteps() {
             if (!state.currentStatement) {
                 alert('Please select a statement from the "Say It" tab first');
                 return;
             }
             
+            const container = document.getElementById('proof-container');
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Generating proof steps...</p>';
+            
+            // Show proof actions
+            document.getElementById('proof-actions').style.display = 'flex';
+            
+            // Hide complete proof if showing
+            document.getElementById('complete-proof').classList.remove('active');
+            
+            try {
+                // Use AI to generate appropriate proof steps
+                const response = await callAI(`
+                    Generate a proof for this statement about primitive Pythagorean triples:
+                    "${state.currentStatement}"
+                    
+                    Create exactly 8 logical proof steps.
+                    Each step should be one clear sentence.
+                    Use the formula (m²−n², 2mn, m²+n²) if relevant.
+                    
+                    Format: Return only the 8 steps, one per line, no numbering.
+                `);
+                
+                const steps = response.split('\n').filter(s => s.trim()).slice(0, 8);
+                
+                if (steps.length < 8) {
+                    // Fallback to generic steps if AI doesn't provide enough
+                    generateFallbackSteps();
+                } else {
+                    state.currentProofSteps = steps;
+                    displayShuffledSteps(steps);
+                }
+            } catch (error) {
+                // Fallback to pre-defined steps
+                generateFallbackSteps();
+            }
+        }
+
+        function generateFallbackSteps() {
             let steps = [];
+            const statement = state.currentStatement.toLowerCase();
             
             // Generate appropriate steps based on common properties
-            if (state.currentStatement.toLowerCase().includes('divisible') && state.currentStatement.toLowerCase().includes('3')) {
+            if (statement.includes('exactly one') && statement.includes('divisible') && statement.includes('3')) {
                 steps = [
                     "Consider a primitive Pythagorean triple (a, b, c) where a² + b² = c².",
-                    "Using the formula, every primitive triple has form (m²−n², 2mn, m²+n²).",
-                    "We examine divisibility by 3 for each component.",
-                    "For a = m²−n²: If m ≡ n (mod 3), then m²−n² ≡ 0 (mod 3).",
-                    "For b = 2mn: If m ≡ 0 (mod 3) or n ≡ 0 (mod 3), then 2mn ≡ 0 (mod 3).",
-                    "For c = m²+n²: If m ≡ 0 and n ≡ 0 (mod 3), then m²+n² ≡ 0 (mod 3), but this contradicts gcd(m,n)=1.",
-                    "Since m and n are coprime, they cannot both be divisible by 3.",
-                    "Therefore, at least one of a, b, or c is divisible by 3."
+                    "Every primitive triple has the form (m²−n², 2mn, m²+n²) with m > n > 0 and gcd(m,n) = 1.",
+                    "We need to show exactly one of a, b, c is divisible by 3.",
+                    "If neither m nor n is divisible by 3, then m² ≡ 1 (mod 3) and n² ≡ 1 (mod 3).",
+                    "This gives a ≡ 0 (mod 3), b ≢ 0 (mod 3), and c ≢ 0 (mod 3).",
+                    "If exactly one of m, n is divisible by 3, then b ≡ 0 (mod 3) but a ≢ 0 and c ≢ 0 (mod 3).",
+                    "Since gcd(m,n) = 1, both cannot be divisible by 3 simultaneously.",
+                    "Therefore, exactly one of a, b, or c is divisible by 3."
                 ];
-            } else if (state.currentStatement.toLowerCase().includes('odd') && state.currentStatement.toLowerCase().includes('even')) {
+            } else if (statement.includes('at least one') && statement.includes('divisible')) {
+                const divisor = statement.match(/\b(\d+)\b/)?.[0] || '3';
+                steps = [
+                    `Consider a primitive Pythagorean triple (a, b, c) where a² + b² = c².`,
+                    `Using the formula, every primitive triple has form (m²−n², 2mn, m²+n²).`,
+                    `We examine divisibility by ${divisor} for each component.`,
+                    `Analyze the possible remainders when m and n are divided by ${divisor}.`,
+                    `Check each case systematically for the values of a, b, and c modulo ${divisor}.`,
+                    `If none of a, b, c is divisible by ${divisor}, we reach a contradiction.`,
+                    `The contradiction shows our assumption was wrong.`,
+                    `Therefore, at least one of a, b, or c must be divisible by ${divisor}.`
+                ];
+            } else if (statement.includes('odd') || statement.includes('even')) {
                 steps = [
                     "Let (a, b, c) be a primitive Pythagorean triple.",
                     "From the formula: a = m²−n², b = 2mn, c = m²+n².",
                     "Notice that b = 2mn is always even (divisible by 2).",
-                    "For c = m²+n²: Since exactly one of m, n is even, m² and n² have opposite parity.",
+                    "Since exactly one of m, n is even, m² and n² have opposite parity.",
                     "Therefore c = m²+n² is odd (odd + even = odd).",
-                    "For a = m²−n²: Similarly, since m² and n² have opposite parity, a is odd.",
+                    "Similarly, a = m²−n² is odd (odd − even = odd).",
                     "We conclude: a is odd, b is even, c is odd.",
                     "Therefore, exactly one of the three numbers (b) is even."
                 ];
             } else {
+                // Generic steps
                 steps = [
-                    "State the property to be proven.",
-                    "Use the formula representation (m²−n², 2mn, m²+n²).",
+                    "State the property to be proven clearly.",
+                    "Consider the general form (m²−n², 2mn, m²+n²) for primitive triples.",
                     "Apply the constraints: m > n > 0, gcd(m,n) = 1, exactly one even.",
-                    "Analyze each component of the triple.",
-                    "Apply relevant number theory properties.",
-                    "Show the required property holds.",
-                    "State the conclusion."
+                    "Analyze the first component a = m²−n².",
+                    "Analyze the second component b = 2mn.",
+                    "Analyze the third component c = m²+n².",
+                    "Show the required property holds for all cases.",
+                    "Therefore, the statement is proven."
                 ];
             }
             
-            // Shuffle steps
+            state.currentProofSteps = steps;
+            displayShuffledSteps(steps);
+        }
+
+        function displayShuffledSteps(steps) {
             const shuffled = [...steps].sort(() => Math.random() - 0.5);
-            
             const container = document.getElementById('proof-container');
             container.innerHTML = '';
             
@@ -1127,6 +1279,40 @@
                 div.dataset.originalIndex = steps.indexOf(step);
                 container.appendChild(div);
             });
+            
+            state.proofCompleted = false;
+        }
+
+        // Challenge AI function
+        async function challengeAI() {
+            if (!state.currentStatement) {
+                alert('Please select a statement first');
+                return;
+            }
+            
+            const feedback = document.getElementById('proof-feedback');
+            feedback.className = 'feedback-display warning';
+            feedback.innerHTML = 'Challenging AI to generate a more accurate proof...';
+            
+            try {
+                const response = await callAI(`
+                    The student claims: "${state.currentStatement}"
+                    
+                    The current proof seems to be about a different property.
+                    Generate a proof that EXACTLY matches their statement.
+                    If the statement is false, provide a counterexample.
+                    If the proof is too advanced, explain why briefly.
+                    
+                    Keep response under 5 sentences.
+                `);
+                
+                feedback.className = 'feedback-display info';
+                feedback.innerHTML = `<strong>AI Response:</strong><br>${response}<br><br>
+                    <button class="action-btn primary" onclick="generateProofSteps()">Regenerate Steps</button>`;
+            } catch (error) {
+                feedback.className = 'feedback-display error';
+                feedback.textContent = 'AI challenge temporarily unavailable.';
+            }
         }
 
         function setupDragAndDrop() {
@@ -1188,12 +1374,62 @@
             const feedback = document.getElementById('proof-feedback');
             if (correct) {
                 feedback.className = 'feedback-display success';
-                feedback.innerHTML = '<strong>Perfect!</strong> Your proof is correctly ordered and logically sound!';
+                feedback.innerHTML = '<strong>Perfect!</strong> Your proof is correctly ordered!';
+                
+                // Transform to complete proof after a delay
+                setTimeout(() => {
+                    displayCompleteProof();
+                }, 1500);
             } else {
                 feedback.className = 'feedback-display info';
                 const correctCount = document.querySelectorAll('.proof-step.correct').length;
                 feedback.innerHTML = `<strong>Getting there!</strong> ${correctCount} out of ${steps.length} steps are in the right position. Green highlights show correct placement.`;
             }
+        }
+
+        function displayCompleteProof() {
+            const container = document.getElementById('proof-container');
+            const completeProof = document.getElementById('complete-proof');
+            const theoremBox = document.getElementById('theorem-statement');
+            const proofText = document.getElementById('proof-text');
+            
+            // Set theorem statement
+            theoremBox.innerHTML = `<strong>Theorem:</strong> ${state.currentStatement}`;
+            
+            // Build proof text
+            let proofHTML = '<p><strong>Proof:</strong></p>';
+            state.currentProofSteps.forEach((step, index) => {
+                if (index === 0) {
+                    proofHTML += `<p>${step}`;
+                } else if (index === state.currentProofSteps.length - 1) {
+                    proofHTML += ` ${step}</p>`;
+                } else if (index % 2 === 0) {
+                    proofHTML += `</p><p>${step}`;
+                } else {
+                    proofHTML += ` ${step}`;
+                }
+            });
+            
+            proofText.innerHTML = proofHTML;
+            
+            // Hide drag container and show complete proof
+            container.style.display = 'none';
+            document.getElementById('proof-actions').style.display = 'none';
+            completeProof.classList.add('active', 'transforming');
+            
+            state.proofCompleted = true;
+        }
+
+        function tryAnotherStatement() {
+            // Reset proof area
+            document.getElementById('complete-proof').classList.remove('active');
+            document.getElementById('proof-container').style.display = 'block';
+            document.getElementById('proof-container').innerHTML = '<p style="text-align: center; color: var(--text-muted);">Select a different statement or create a new one</p>';
+            document.getElementById('proof-feedback').style.display = 'none';
+            state.proofCompleted = false;
+            
+            // Go back to Say It tab
+            switchTab('say');
         }
 
         function getHint() {
@@ -1203,11 +1439,10 @@
         }
 
         function resetProof() {
-            generateProofSteps();
-            document.getElementById('proof-feedback').style.display = 'none';
-            document.getElementById('complete-proof').classList.remove('active');
-            document.getElementById('proof-container').style.display = 'block';
-            document.querySelector('#proof-area .action-buttons').style.display = 'flex';
+            if (state.currentProofSteps.length > 0) {
+                displayShuffledSteps(state.currentProofSteps);
+                document.getElementById('proof-feedback').style.display = 'none';
+            }
         }
 
         async function checkWithAI() {
@@ -1218,43 +1453,63 @@
             
             const feedback = document.getElementById('proof-feedback');
             feedback.className = 'feedback-display info';
-            feedback.innerHTML = 'AI is checking your statement...';
+            feedback.innerHTML = 'AI is verifying your statement...';
             
             try {
                 const response = await callAI(`
                     Is this statement about primitive Pythagorean triples true or false?
                     Statement: "${state.currentStatement}"
                     
-                    If true, give a brief reason why. If false, provide a counterexample.
-                    Keep response under 3 sentences.
+                    If true, explain why briefly.
+                    If false, provide a specific counterexample.
+                    If it's too advanced to prove here, say so.
+                    
+                    Keep response under 4 sentences.
                 `);
                 
                 feedback.className = 'feedback-display info';
-                feedback.innerHTML = `<strong>AI Analysis:</strong><br>${response}`;
+                feedback.innerHTML = `<strong>AI Verification:</strong><br>${response}`;
             } catch (error) {
                 feedback.className = 'feedback-display error';
-                feedback.textContent = 'AI check temporarily unavailable.';
+                feedback.textContent = 'AI verification temporarily unavailable.';
             }
         }
 
-        // Simple AI integration
-        async function callAI(prompt) {
-            try {
-                const response = await fetch('/api/gemini', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ role: "user", parts: [{ text: prompt }] }] 
-                    })
-                });
-                
-                if (!response.ok) throw new Error('AI unavailable');
-                
-                const data = await response.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate response';
-            } catch (error) {
-                console.error('AI error:', error);
-                throw error;
+        // AI integration with proper format
+        async function callAI(prompt, maxRetries = 2) {
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                    }
+                    
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            contents: [{ role: "user", parts: [{ text: prompt }] }] 
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (!text) {
+                        throw new Error('Empty response from AI');
+                    }
+                    
+                    return text;
+                    
+                } catch (error) {
+                    if (attempt === maxRetries) {
+                        console.error('AI error:', error);
+                        throw error;
+                    }
+                }
             }
         }
 
